@@ -1,0 +1,88 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: CF template to create the first security group
+
+Parameters:
+  OwnerName:
+    Type: String
+    Description: Enter your name (no spaces)
+
+  InstanceTypeParameter:
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - m1.small
+    Description: <
+      Enter t2.micro or m1.small.
+      Default is t2.micro as it is included in the Free Tier.
+
+Resources:
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: The first security group
+      GroupName: !Sub "${OwnerName}-sg"
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 0.0.0.0/0
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+          Description: Allows SSH from anywhere
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: 0.0.0.0/0
+          Description: Allows to access Jenkins from anywhere
+      VpcId: vpc-04ab2a705425e2060
+      Tags:
+        - Key: "CreatedBy"
+          Value:
+            Ref: OwnerName
+
+  FirstEC2Instance:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      IamInstanceProfile: SSMRole
+      ImageId: "ami-0db188056a6ff81ae"
+      KeyName: student
+      InstanceType:
+        Ref: InstanceTypeParameter
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeleteOnTermination: true
+          DeviceIndex: "0"
+          GroupSet:
+            - Ref: SecurityGroup
+          SubnetId: "subnet-0ef90ed43332b17ea"
+      Tags:
+        - Key: "CreatedBy"
+          Value:
+            Ref: OwnerName
+        - Key: "Name"
+          Value: !Sub "${OwnerName}-cf-instance"
+      UserData:
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash -xe
+            sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat/jenkins.repo
+            sudo rpm --import https://pkg.jenkins.io/redhat/jenkins.io.key
+            sudo yum upgrade -y
+            sudo amazon-linux-extras install epel java-openjdk11 -y
+            sudo yum install -y jenkins
+            sudo systemctl daemon-reload
+            sudo systemctl start jenkins
+            sudo systemctl enable jenkins
+
+Outputs:
+  JenkinsUrl:
+    Description: Jenkins URL
+    Value: !Sub
+      - http://${PublicIP}:8080
+      - {PublicIP: !GetAtt FirstEC2Instance.PublicIp}
