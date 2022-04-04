@@ -3,20 +3,47 @@ pipeline {
      stages {
          stage('Build') {
              steps {
-                 sh 'echo "Hello World"'
-                 sh '''
-                     echo "Multiline shell steps works too"
-                     ls -lah
-                 '''
+                 sh 'echo "Working"'
              }
          }      
          stage('Upload to AWS') {
               steps {
-                  withAWS(region:'eu-west-1',credentials:'kristers') {
-                  sh 'echo "Uploading content with AWS creds"'
-                      s3Upload(pathStyleAccessEnabled: true, payloadSigningEnabled: true, file:'first-stack.yaml', bucket:'jenkinsgitpush')
+                  script {
+                      def user_input = input(
+                          message: 'Upload to S3?',
+                          parameters: [
+                              [
+                                  $class: 'ChoiceParameterDefinition'
+                                  choices: ['no','yes'].join('\n'),
+                                  name: 'input',
+                              ]
+                          ]
+                      )
+                      echo "Yes or No ${user_input}"
+                      if("${user_input}"=="yes"){
+                        withAWS(region:'eu-west-1',credentials:'kristers') {
+                        sh 'echo "Uploading content with AWS creds"'
+                        s3Upload(pathStyleAccessEnabled: true, payloadSigningEnabled: true, file:'first-stack.yaml', bucket:'jenkinsgitpush')
+                      }
+                  } else {
+                      withCredentials([gitUsernamePassword(credentialsId: 'pushId', gitToolName: 'Default')]) {
+                    sh '''
+                    git checkout main
+                    git pull origin main
+                    git branch reverted HEAD~1
+                    git checkout reverted first-stack.yaml
+                    git add .
+                    git commit -m "reverted yaml file"
+                    git branch -d reverted
+                    git push 
+                    '''
+                  }
+                //   withAWS(region:'eu-west-1',credentials:'kristers') {
+                //   sh 'echo "Uploading content with AWS creds"'
+                //       s3Upload(pathStyleAccessEnabled: true, payloadSigningEnabled: true, file:'first-stack.yaml', bucket:'jenkinsgitpush')
                   }
               }
          }
      }
+}
 }
