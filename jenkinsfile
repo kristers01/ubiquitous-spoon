@@ -13,7 +13,7 @@ pipeline {
                           message: 'Upload to S3?',
                           parameters: [
                               [
-                                  $class: 'ChoiceParameterDefinition'
+                                  $class: 'ChoiceParameterDefinition',
                                   choices: ['no','yes'].join('\n'),
                                   name: 'input',
                               ]
