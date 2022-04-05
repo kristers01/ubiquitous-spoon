@@ -28,7 +28,6 @@ pipeline {
                   } else {
                       withCredentials([gitUsernamePassword(credentialsId: 'pushId', gitToolName: 'Default')]) {
                     sh '''
-                    git branch -D reverted-branch
                     git checkout main
                     git pull origin main
                     git checkout -b reverted-branch
