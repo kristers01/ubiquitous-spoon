@@ -8,11 +8,6 @@ pipeline {
          }      
          stage('Upload to AWS') {
               steps {
-                  withCredentials([gitUsernamePassword(credentialsId: 'pushId', gitToolName: 'Default')]) {
-                    sh '''
-                    git pull origin main
-                    '''
-                  }
                   script {
                       def user_input = input(
                           message: 'Upload to S3?',
@@ -43,6 +38,9 @@ pipeline {
                     git push origin main
                     '''
                   }
+                //   withAWS(region:'eu-west-1',credentials:'kristers') {
+                //   sh 'echo "Uploading content with AWS creds"'
+                //       s3Upload(pathStyleAccessEnabled: true, payloadSigningEnabled: true, file:'first-stack.yaml', bucket:'jenkinsgitpush')
                   }
               }
          }
