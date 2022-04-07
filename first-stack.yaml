@@ -82,7 +82,6 @@ Resources:
             sudo systemctl enable jenkins
             sudo yum install git
 
-
 Outputs:
   JenkinsUrl:
     Description: Jenkins URL
