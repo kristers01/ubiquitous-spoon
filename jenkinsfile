@@ -25,11 +25,13 @@ pipeline {
                           ]
                       )
                       echo "Upload to S3? ${user_input}"
+                      
                       if("${user_input}"=="yes"){
                         withAWS(region:'eu-west-1',credentials:'kristers') {
                         s3Upload(pathStyleAccessEnabled: true, payloadSigningEnabled: true, file:'first-stack.yaml', bucket:'jenkinsgitpush')
                         cfnUpdate(stack:'stack13', url:'https://jenkinsgitpush.s3.eu-west-1.amazonaws.com/first-stack.yaml', params:['OwnerName': 'Kristers'])
                       }
+
                   } else {
                       withCredentials([gitUsernamePassword(credentialsId: 'pushId', gitToolName: 'Default')]) {
                     sh '''
