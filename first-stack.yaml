@@ -25,6 +25,8 @@ Resources:
     Properties:
       GroupDescription: The first security group
       GroupName: !Sub "${OwnerName}-sg"
+      SecurityGroupIds: 
+        - !Ref FirstSG
       SecurityGroupEgress:
         - IpProtocol: tcp
           FromPort: 0
