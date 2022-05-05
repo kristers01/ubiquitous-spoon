@@ -60,7 +60,7 @@ Resources:
           DeleteOnTermination: true
           DeviceIndex: "0"
           GroupSet:
-            - Ref: SecurityGroup
+            - Ref: FirstSG
           SubnetId: "subnet-0ef90ed43332b17ea"
       Tags:
         - Key: "CreatedBy"
