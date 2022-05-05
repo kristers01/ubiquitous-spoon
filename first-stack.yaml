@@ -21,7 +21,7 @@ Parameters:
 
 Resources:
   FirstSG:
-    Type: AWS::EC2::SecurityGroup
+    Type: AWS::EC2::SecurityGroup:Id
     Properties:
       GroupDescription: The first security group
       GroupName: !Sub "${OwnerName}-sg"
