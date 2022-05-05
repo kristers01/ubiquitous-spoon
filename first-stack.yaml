@@ -20,7 +20,7 @@ Parameters:
       Default is t2.micro as it is included in the Free Tier.
 
 Resources:
-  SecurityGroup:
+  FirstSG:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: The first security group
