@@ -14,6 +14,7 @@ Parameters:
     Default: t2.micro
     AllowedValues:
       - t2.micro
+      - t3.micro
       - m1.small
     Description: <
       Enter t2.micro or m1.small.
@@ -21,12 +22,10 @@ Parameters:
 
 Resources:
   FirstSG:
-    Type: AWS::EC2::SecurityGroup:Id
+    Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: The first security group
       GroupName: !Sub "${OwnerName}-sg"
-      SecurityGroupIds: 
-        - !Ref FirstSG
       SecurityGroupEgress:
         - IpProtocol: tcp
           FromPort: 0
@@ -82,6 +81,9 @@ Resources:
             sudo systemctl daemon-reload
             sudo systemctl start jenkins
             sudo systemctl enable jenkins
+            sudo yum install git
+            sudo yum update
+            sudo yum -y upgrade
 
 Outputs:
   JenkinsUrl:
