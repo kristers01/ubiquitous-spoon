@@ -1,55 +1,50 @@
 pipeline {
-     agent any
-     stages {
-         stage('Build') {
-             steps {
-                 sh 'echo "Working"'
-             }
-         }      
-         stage('Upload to AWS') {
-              steps {
-                  withCredentials([gitUsernamePassword(credentialsId: 'pushId', gitToolName: 'Default')]) {
-                    sh '''
-                    git pull origin main
-                    '''
-                  }
-                  script {
-                      def user_input = input(
-                          message: 'Upload to S3?',
-                          parameters: [
-                              [
-                                  $class: 'ChoiceParameterDefinition',
-                                  choices: ['no','yes'].join('\n'),
-                                  name: 'input',
-                              ]
-                          ]
-                      )
-                      echo "Upload to S3? ${user_input}"
-                      
-                      if("${user_input}"=="yes"){
-                        withAWS(region:'eu-west-1',credentials:'kristers') {
-                        s3Upload(pathStyleAccessEnabled: true, payloadSigningEnabled: true, file:'first-stack.yaml', bucket:'jenkinsgitpush')
-                        cfnUpdate(stack:'jenkinsstack', url:'https://s3.amazonaws.com/jenkinsgitpush/first-stack.yaml')
-                      }
-
-                  } else {
-                      withCredentials([gitUsernamePassword(credentialsId: 'pushId', gitToolName: 'Default')]) {
-                    sh '''
-                    git config --global user.email "kristers.rukmanis.32@gmail.com"
-                    git config --global user.name "kristers01"
-                    git checkout main
-                    git pull origin main
-                    git checkout -b reverted-branch
-                    git revert -m 1 HEAD
-                    git checkout main
-                    git merge reverted-branch
-                    git push origin main
-                    git branch -D reverted-branch
-                    '''
-                  }
-                  }
-              }
-         }
-     }
+    agent any
+    stages {
+        stage("User input") {
+            steps {
+                input("Update cloudformation stack?")
+            }
+        }
+        stage("Upload to S3") {
+            steps{
+                withCredentials([gitUsernamePassword(credentialsId: 'pushId', gitToolName: 'Default')]) {
+                sh '''
+                git pull origin main
+                '''
+                }
+                withAWS(region:'eu-west-1',credentials:'kristers') {
+                s3Upload(pathStyleAccessEnabled: true, payloadSigningEnabled: true, file:'first-stack.yaml', bucket:'jenkinsgitpush')
+                }
+            }
+        }
+        stage("Update cloudformation stack") {
+            steps {
+                withAWS(region:'eu-west-1',credentials:'kristers') {
+                cfnUpdate(stack:'jenkinsstack', url:'https://s3.amazonaws.com/jenkinsgitpush/first-stack.yaml')
+                }
+            }
+        }
+    }
 }
+post {
+    success {
+        echo "Works!"
+    }
+    aborted {
+        withCredentials([gitUsernamePassword(credentialsId: 'pushId', gitToolName: 'Default')]) {
+        sh '''
+        git config --global user.email "kristers.rukmanis.32@gmail.com"
+        git config --global user.name "kristers01"
+        git checkout main
+        git pull origin main
+        git checkout -b reverted-branch
+        git revert -m 1 HEAD
+        git checkout main
+        git merge reverted-branch
+        git push origin main
+        git branch -D reverted-branch
+        '''
+        }
+    }
 }
