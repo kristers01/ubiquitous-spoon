@@ -33,6 +33,8 @@ pipeline {
         aborted {
             withCredentials([gitUsernamePassword(credentialsId: 'pushId', gitToolName: 'Default')]) {
             sh '''
+            git config --global user.email "kristers.rukmanis.32@gmail.com"
+            git config --global user.name "kristers01"
             git checkout main
             git pull origin main
             git checkout -b reverted-branch
