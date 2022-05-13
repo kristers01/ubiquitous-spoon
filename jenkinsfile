@@ -33,6 +33,7 @@ pipeline {
         aborted {
             withCredentials([gitUsernamePassword(credentialsId: 'pushId', gitToolName: 'Default')]) {
             sh '''
+            echo "start of script"
             git config --global user.email "kristers.rukmanis.32@gmail.com"
             git config --global user.name "kristers01"
             echo "set global username and email"
