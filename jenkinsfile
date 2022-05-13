@@ -35,14 +35,23 @@ pipeline {
             sh '''
             git config --global user.email "kristers.rukmanis.32@gmail.com"
             git config --global user.name "kristers01"
+            echo "set global username and email"
             git checkout main
+            echo "checked out main"
             git pull origin main
+            echo "pulled main branch from repo"
             git checkout -b reverted-branch
+            echo "created temporary branch 'reverted branch'"
             git revert -m 1 HEAD
+            echo "reverted head 1 back"
             git checkout main
+            echo "checked out main"
             git merge reverted-branch
+            echo "merged 'reverted branch' with main branch"
             git push origin main
+            echo "pushed to repo"
             git branch -D reverted-branch
+            echo "deleted reverted branch"
             '''
             }
         }
